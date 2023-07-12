@@ -1,0 +1,12 @@
+#mynetwork {
+  width: 600px;
+  height: 600px;
+  border: 1px solid lightgray;
+}
+p {
+  max-width: 600px;
+}
+
+h4 {
+  margin-bottom: 3px;
+}

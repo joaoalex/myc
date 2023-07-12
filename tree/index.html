@@ -1,0 +1,208 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css">
+  
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+  <script type="text/javascript" src="https://rawgit.com/adamjimenez/jstree-table/master/jstreetable.js"></script>
+  
+  
+  <title>jtree sample</title>
+  
+  <script>
+     //var jsonTreeData = "";
+	  
+$.mytree = function(jsonTreeData){
+   
+	$('#treeview_json').jstree({
+  plugins: ["table","sort", "wholerow", "types", "themes"],
+  core: {
+    data: jsonTreeData
+  },
+  // configure tree table
+  table: {
+    columns: [
+      {width: 600, header: "Temas"},
+      //{width: 150, value: "status", header: "Price", format: function(v) {if (v){ return '$'+v.toFixed(2) }}},
+	  {width: 250, value: "key", header: "Key"},
+      {width: 300, value: "status", header: "Status"},
+	  {width: 300, value: "priority", header: "Priority"}
+    ],
+    resizable: true,
+
+    width: 2000,
+    height: 1000
+  }
+});
+    
+	$('#treeview_json').on('select_node.jstree', function(e,data) {
+    var link = $('#' + data.selected).find('a');
+	//var link = $('#' + data.selected).find('href');
+	//console.log(link)
+	
+	// same page
+	//window.location.href = link.attr("href");
+	
+	// new page
+	//window.open(link.attr("href"), '_blank');
+	
+	// iframe
+	//top.document.getElementById('inin').setAttribute("src",link.attr("href"));
+	
+    //window.open(link.attr("href"),'popup','width=800,height=500');
+
+	console.log(link.attr("href"))
+    if (link.attr("href") != "#" && link.attr("href") != "javascript:;" && link.attr("href") != "") {
+        if (link.attr("target") == "_blank") {
+            link.attr("href").target = "_blank";
+        }
+    //  document.location.href = link.attr("href");
+	//	top.document.getElementById('inin').setAttribute("src",link.attr("href"));
+		let params = `scrollbars=yes,resizable=yes,status=no,location=no,toolbar=no,menubar=no,
+		width=1000,height=500,left=250,top=80`;
+        
+		open(link.attr("href"), 'jira', params);    
+		
+		//top.document.getElementById('inin').setAttribute("src",link.attr("href"))
+        return false;
+		}
+	});
+
+  };
+  
+      async function firstFunction() {
+	  try {
+			const response = await fetch('/api/TME');
+			//const response = await fetch('/');
+			
+			 data=[{
+				  text: "Products",
+				  data: {price: 0.5, quantity: 8},
+				  children: [{
+					text: "Fruit",
+					data: {}, 
+					children:[
+					  {text: "Apple", data: {price: 0.1, quantity: 20}},
+					  {text: "Banana", data: {price: 0.2, quantity: 31}},
+					  {text: "Grapes", data: {price: 1.99, quantity: 34}},
+					  {text: "Mango", data: {price: 0.5, quantity: 8}},
+					  {text: "Melon", data: {price: 0.8, quantity: 4}},
+					  {text: "Pear", data: {price: 0.1, quantity: 30}},
+					  {text: "Strawberry", data: {price: 0.15, quantity: 32}}
+					],
+					'state': {'opened': true}
+				  }, {
+					text: "Vegetables",
+					data: {}, 
+					children:[
+					  {text: "Aubergine", data: {price: 0.5, quantity: 8}},
+					  {text: "Broccoli", data: {price: 0.4, quantity: 22}},
+					  {text: "Carrot", data: {price: 0.1, quantity: 32}},
+					  {text: "Cauliflower", data: {price: 0.45, quantity: 18}},
+					  {text: "Potato", data: {price: 0.2, quantity: 38}}
+					]
+				  }],
+				  'state': {'opened': true}
+				}];
+			 var data = await response.json();
+				
+			 $.mytree(data);
+			//console.log(data);
+		  } catch (error) {
+			console.error(error);
+		  }
+		  return data;
+		}
+  
+	
+    firstFunction()
+	
+    // Call start
+	
+
+
+	/*
+	var jsonTreeData = 
+	[
+       { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+       { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
+       { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+       { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" , "href": "https://jira.k8s2.grupocgd.com/browse/TMEINV-2"
+            },
+    ];
+	*/
+	
+  </script>
+  
+</head>
+<style>
+.float-container {
+    border: 3px solid #fff;
+    padding: 20px;
+}
+
+#treeview_json {
+   width: -webkit-calc(30% - 20px);
+   width: -moz-calc(30% - 20px);
+   width: calc(30% - 20px);
+   float: left;
+   <!--border: 2px solid green;-->
+}
+
+#div2 {
+   width: -webkit-calc(70% - 20px);
+   width: -moz-calc(70% - 20px);
+   width: calc(70% - 20px);
+   
+   float: right;  
+          padding: 0;
+        overflow: hidden;
+}
+
+      #inin {
+        width: 1200px;
+        height: 2500px;
+        border: 0px;
+      }
+      #inin {
+        zoom: 0.95;
+        -moz-transform: scale(0.95);
+        -moz-transform-origin: 0 0;
+        -o-transform: scale(0.95);
+        -o-transform-origin: 0 0;
+        -webkit-transform: scale(0.95);
+        -webkit-transform-origin: 0 0;
+      }
+      @media screen and (-webkit-min-device-pixel-ratio:0) {
+        #scaled-frame {
+          zoom: 1;
+        }
+      }
+	  
+</style>
+<body>
+<div class="float-container">
+
+  <div id="treeview_json">
+   
+  </div>
+  
+  <div  id="div2">
+   
+    <!--    <embed src="https://www.samsung.com" width="1000" height="500" style="border: 1px solid white; box-shadow: 0 0 5px black;" /> -->
+    
+<!--	<iframe id="inin"  title="Inline Frame Example"
+     src=""> </iframe>
+ https://ldc6001app101:8443/public/dashboard/2763ae8c-bd04-4354-9ba1-91fe260f6322 -->
+  </div>
+ </div>
+
+</body>
+</html>
+<script type="text/javascript">
+  
+</script>

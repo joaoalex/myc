@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Vis Network | Data | Dynamic filtering</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>-
+<body>
+<!-- partial:index.partial.html -->
+<h1>Dynamic filtering</h1>
+<p>
+  With
+  <a href="https://visjs.github.io/vis-data/data/dataview.html" target="_blank">
+    <code>vis.DataView</code></a
+  >
+  on top of vis.DataSet you can filter displayed data without modifying the data
+  source.
+</p>
+<label>
+  Filter nodes
+  <select id="nodeFilterSelect">
+    <option value>Todas as dependências</option>
+    <option value="CANAIS">TRIBO CANAIS</option>
+	<option value="DSI">TRIBO DSI</option>
+	<option value="CENTRAL">TRIBO CENTRAL</option>	
+	<option value="DMPN">TRIBO DMPN</option>
+	<option value="CLIENTES">CLIENTES</option>
+    <option value="SGOA">SGOA</option>
+    <option value="PSI">PSI</option>
+    <option value="OFERTA">OFERTA</option>
+	<option value="CREDITO">CREDITO</option>
+	
+	
+
+	
+	
+  </select>
+</label>
+<br />
+<br />
+<label>
+  Filter edges
+  <div>
+    <label>
+      <input type="checkbox" name="edgesFilter" value="dependente" checked />
+      é <span style="color: green">dependente</span> de
+    </label>
+  </div>
+  <div>
+    <label>
+      <input type="checkbox" name="edgesFilter" value="parte" checked />
+      é <span style="color: blue">parte</span> de
+    </label>
+  </div>
+  <div>
+    <label>
+      <input type="checkbox" name="edgesFilter" value="interessado" checked />
+      é <span style="color: red">interessado</span> em
+    </label>
+  </div>
+</label>
+<br />
+<div id="mynetwork"></div>
+<!-- partial -->
+  <script src='https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
