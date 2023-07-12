@@ -1,0 +1,310 @@
+
+<html>
+  <head>
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<!-- <script type="text/javascript" src="https://visjs.github.io/vis-network/examples/network/datasources/WorldCup2014.js"></script> -->
+<script type="text/javascript" src="datasources/file.js"></script>
+
+<script>
+  var network;
+  var allNodes;
+  var highlightActive = false;
+
+  var nodesDataset = new vis.DataSet(nodes); // these come from WorldCup2014.js
+  var edgesDataset = new vis.DataSet(edges); // these come from WorldCup2014.js
+
+  var data = { nodes: nodesDataset, edges: edgesDataset }; // Note: data is coming from ./datasources/WorldCup2014.js
+
+  function init(){
+
+      //alert("loaded");
+      
+      redrawAll();
+  }
+  function clusterByCid3(groupid) {
+  network.setData(data);
+  var clusterOptionsByData = {
+    joinCondition: function (childOptions) {
+      if (network.getConnectedNodes(groupid, "to").includes(childOptions.id)
+        || groupid == childOptions.id) {
+        
+        return true;
+    }
+    return false;
+    },
+    clusterNodeProperties: {
+      id: "cidCluster",
+      borderWidth: 3,
+      shape: "database",
+    },
+  };
+  network.cluster(clusterOptionsByData);
+}
+ 
+function clusterByCid2(groupid) {
+  network.setData(data);
+  var clusterOptionsByData = {
+    joinCondition: function (childOptions) {
+      return childOptions.group != groupid;
+    },
+    clusterNodeProperties: {
+      id: "cidCluster",
+      borderWidth: 3,
+      shape: "database",
+    },
+  };
+  network.cluster(clusterOptionsByData);
+}
+
+
+function clusterByCid(groupid) {
+  network.setData(data);
+  var clusterOptionsByData = {
+    joinCondition: function (childOptions) {
+      return childOptions.group == groupid;
+    },
+    clusterNodeProperties: {
+      id: "cidCluster",
+      borderWidth: 3,
+      shape: "database",
+    },
+  };
+  network.cluster(clusterOptionsByData);
+}
+
+function clusterByColor() {
+  network.setData(data);
+  var colors = ["orange", "lime", "DarkViolet"];
+  var clusterOptionsByData;
+  for (var i = 0; i < colors.length; i++) {
+    var color = colors[i];
+    clusterOptionsByData = {
+      joinCondition: function (childOptions) {
+        return childOptions.color.background == color; // the color is fully defined in the node.
+      },
+      processProperties: function (clusterOptions, childNodes, childEdges) {
+        var totalMass = 0;
+        for (var i = 0; i < childNodes.length; i++) {
+          totalMass += childNodes[i].mass;
+        }
+        clusterOptions.mass = totalMass;
+        return clusterOptions;
+      },
+      clusterNodeProperties: {
+        id: "cluster:" + color,
+        borderWidth: 3,
+        shape: "database",
+        color: color,
+        label: "color:" + color,
+      },
+    };
+    network.cluster(clusterOptionsByData);
+  }
+}
+
+function clusterByConnection() {
+  network.setData(data);
+  network.clusterByConnection(1);
+}
+
+function clusterOutliers() {
+  network.setData(data);
+  network.clusterOutliers();
+}
+
+function clusterByHubsize() {
+  network.setData(data);
+  var clusterOptionsByData = {
+    processProperties: function (clusterOptions, childNodes) {
+      clusterOptions.label = "[" + childNodes.length + "]";
+      return clusterOptions;
+    },
+    clusterNodeProperties: {
+      borderWidth: 3,
+      shape: "box",
+      font: { size: 30 },
+    },
+  };
+  network.clusterByHubsize(undefined, clusterOptionsByData);
+}
+
+
+function redrawAll() {
+  var container = document.getElementById("mynetwork");
+  var options = {
+    nodes: {
+      shape: "dot",
+      scaling: {
+        min: 10,
+        max: 50,
+        label: {
+          min: 8,
+          max: 20,
+          drawThreshold: 12,
+          maxVisible: 20,
+        },
+      },
+      font: {
+        size: 11,
+        face: "Tahoma",
+      },
+    },
+    edges: {
+      width: 0.30,
+      color: { inherit: "from" },
+      smooth: {
+        type: "continuous",
+      },
+    },
+   
+    physics:  {
+    enabled: true,
+    solver: "repulsion",
+    repulsion: {
+      nodeDistance: 300 // Put more distance between the nodes.
+    }
+    
+    
+  } 
+  
+
+	
+}
+
+  var data = { nodes: nodesDataset, edges: edgesDataset }; // Note: data is coming from ./datasources/WorldCup2014.js
+
+  network = new vis.Network(container, data, options);
+  network.stabilize();  // added
+
+  // get a JSON object
+  allNodes = nodesDataset.get({ returnType: "Object" });
+
+  network.on("click", neighbourhoodHighlight);
+}
+
+function neighbourhoodHighlight(params) {
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (var nodeId in allNodes) {
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      allNodes[connectedNodes[i]].color = undefined;
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    allNodes[selectedNode].color = undefined;
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // reset all nodes
+    for (var nodeId in allNodes) {
+      allNodes[nodeId].color = undefined;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  for (nodeId in allNodes) {
+    if (allNodes.hasOwnProperty(nodeId)) {
+      updateArray.push(allNodes[nodeId]);
+    }
+  }
+  nodesDataset.update(updateArray);
+}
+
+
+
+</script>
+
+<!-- <script type="text/javascript" src="script.js"></script> -->
+
+    <style type="text/css">
+        #mynetwork {
+            width: 1600px;
+            height: 800px;
+            border: 1px solid lightgray;
+        }
+    </style>
+</head>
+<body>
+  <input type="text" id="groupid" value="CANAIS">
+  <button onclick="myFunction3()">id != ?</button>
+  <button onclick="myFunction()">Grupo = ?</button>
+  <button onclick="myFunction2()">Grupo != ?</button>
+<script>
+function myFunction() {
+  clusterByCid(document.getElementById("groupid").value);
+
+}
+function myFunction2() {
+  clusterByCid2(document.getElementById("groupid").value);
+}
+function myFunction3() {
+  clusterByCid3(document.getElementById("groupid").value);
+}
+</script>
+
+<br />
+<input type="button" onclick="clusterByColor()" value="Cluster by color" />
+
+<input type="button" onclick="clusterOutliers()" value="Cluster outliers" />
+
+<input type="button" onclick="clusterByHubsize()" value="Cluster by hubsize" />
+<br />
+
+<div id="mynetwork"></div>
+
+
+
+<body onload="init()">
+ 
+</body>
+
+
+</html>
