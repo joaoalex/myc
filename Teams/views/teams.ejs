@@ -1,0 +1,96 @@
+<%- include("_header_teams") -%>
+
+<h1>Lista de equipas (<%= model.length %>)</h1>
+
+<div class="table-responsive-sm">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Descrição</th>
+        <th>Segmento</th>
+        <th>Metodologia</th>
+        <th>Ativo</th>
+        <th class="d-print-none">
+          <a class="btn btn-sm btn-success" href="/create">Inserir</a>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (const team of model) { %>
+        <tr>
+          <td><%= team.name %></td>
+          <td><%= team.description %></td>
+          <td><%= team.segment%></td>
+          <td><%= team.metodologia%></td>
+          
+          <td><%= team.ativo %></td>
+          <td class="d-print-none">
+            <a class="btn btn-sm btn-warning" href="/edit/<%= team.id %>">Modificar</a>
+           <!-- <a class="btn btn-sm btn-danger" href="/delete/<%= team.id %>">Eliminar</a>-->
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<script>
+ $("#spinner").show();
+document.addEventListener('readystatechange', event => { 
+  // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+  if (event.target.readyState === "complete") {
+    $("#spinner").hide();
+  }
+})
+</script>
+
+<%- include("_footer") -%>
+<!--(`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` VARCHAR(255),
+   `description` VARCHAR(255), `metodologia` VARCHAR(255),
+   `ativo` TINYINT(1), `questjson` TEXT, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL,
+    segment VARCHAR(30)); 
+  
+  CREATE UNIQUE INDEX teams_name ON teams(name);
+
+
+  PRAGMA foreign_keys=off;
+
+ 
+
+BEGIN TRANSACTION;
+
+ 
+
+ALTER TABLE table1 RENAME TO _table1_old;
+
+ 
+
+CREATE TABLE table1(
+
+( column1 datatype [ NULL | NOT NULL ],
+
+column2 datatype [ NULL | NOT NULL ],
+
+...
+
+);
+
+ 
+
+INSERT INTO table1(column1, column2)
+
+SELECT column1, column2
+
+FROM _table1_old;
+
+ 
+
+COMMIT;
+
+ 
+
+PRAGMA foreign_keys=on;
+
+
+
+  -->

@@ -1,0 +1,22 @@
+<%- include("_header") -%>
+
+<h1>Modificar uma equipa</h1>
+
+<form action="/edit/<%= model.id %>" method="post">
+
+  <div class="form-horizontal">
+
+    <%- include("_editor") -%>
+
+    <div class="form-group row">
+      <label class="col-form-label col-sm-2"></label>
+      <div class="col-sm-10">
+        <input type="submit" value="Mofificar" class="btn btn-default btn-warning" />
+        
+      </div>
+    </div>
+
+  </div>
+</form>
+
+<%- include("_footer") -%>

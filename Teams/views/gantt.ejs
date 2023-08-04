@@ -1,0 +1,303 @@
+<%- include("_head") -%>
+<!--<link rel="stylesheet" type="text/css" href="https://docs.dhtmlx.com/gantt/codebase/dhtmlxgantt.css"> -->
+<link rel="stylesheet" type="text/css" href="https://docs.dhtmlx.com/gantt/codebase/dhtmlxgantt.css?v=8.0.3"> 
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="https://docs.dhtmlx.com/gantt/samples/common/controls_styles.css?v=8.0.3">
+<script src="https://docs.dhtmlx.com/gantt/codebase/dhtmlxgantt.js?v=6.1.7"></script>
+
+<div class="gantt_control">
+	<input type="button" value="Show Critical Path" onclick="updateCriticalPath(this)">
+<!--	<input value="Export to PDF" type="button" onclick="exportGantt('pdf')">
+	<input value="Export to PNG" type="button" onclick="exportGantt('png')">
+ <input type="button" value="Auto schedule" onclick="updateCriticalTasks(this)">   -->
+
+
+<div class="filters_wrapper" id="filters_wrapper">
+		<span>Display tasks with priority:</span>
+
+		<label class="checked_label" id="scale1">
+			<input type="checkbox" name="1" value="1" checked/>
+			<i class="material-icons icon_color">check_box</i>High
+		</label>
+
+		<label id="scale2">
+			<input type="checkbox" name="2" value="1"/>
+			<i class="material-icons">check_box_outline_blank</i>Normal
+		</label>
+
+		<label id="scale3">
+			<input type="checkbox" name="3" value="1"/>
+			<i class="material-icons">check_box_outline_blank</i>Low
+		</label>
+	</div>
+</div>
+
+<div id="gantt_here" style="width:100%; height:100%;"></div>
+<head>
+	<style>
+		html, body {
+			height: 100%;
+			padding: 0px;
+			margin: 0px;
+			overflow: hidden;
+		}
+		
+		
+		.yellow .gantt_cell, .odd.yellow .gantt_cell,
+		.yellow .gantt_task_cell, .odd.yellow .gantt_task_cell {
+			background-color: yellow;
+		}
+
+		.red .gantt_cell, .odd.red .gantt_cell,
+		.red .gantt_task_cell, .odd.red .gantt_task_cell {
+			background-color: #FDE0E0;
+		}
+
+		.green .gantt_cell, .odd.green .gantt_cell,
+		.green .gantt_task_cell, .odd.green .gantt_task_cell {
+			background-color: #BEE4BE;
+		}
+		
+				html, body {
+			height: 100%;
+			padding: 0px;
+			margin: 0px;
+			overflow: hidden;
+		}
+		.filters_wrapper {
+			font: 600 14px Roboto;
+		}
+
+		.filters_wrapper span {
+			font-weight: bold;
+			padding-right: 5px;
+			color: rgba(0,0,0,0.7);
+		}
+
+		.filters_wrapper label {
+			padding-right: 3px;
+		}
+	</style>
+</head>
+<script>	
+gantt.plugins({
+		//auto_scheduling: true,
+		export_api: true,
+		critical_path: true
+	});
+gantt.config.xml_date = "%Y-%m-%d %H:%i";
+
+gantt.config.scales = [
+		{unit: "month", step: 1, format: "%M"},
+		{unit: "year", step: 1, format: "%Y"}
+		
+	];
+			gantt.config.show_tasks_outside_timescale = true;
+			gantt.config.start_date = new Date(2023, 6, 1);
+			gantt.config.end_date = new Date(2023, 10,1);
+	
+		gantt.config.grid_width = 380;
+	gantt.config.add_column = false;
+	gantt.templates.grid_row_class = function (start_date, end_date, item) {
+		if (item.progress == 0) return "red";
+		if (item.progress >0 && item.progress < 1) return "yellow";
+		if (item.progress >= 1) return "green";
+	};
+	gantt.templates.task_row_class = function (start_date, end_date, item) {
+		if (item.progress == 0) return "red";
+		if (item.progress >0 && item.progress < 1) return "yellow";
+		if (item.progress >= 1) return "green";
+	};
+	
+	
+	
+	var filter_inputs = document.getElementById("filters_wrapper").getElementsByTagName("input");
+	for (var i = 0; i < filter_inputs.length; i++) {
+		var filter_input = filter_inputs[i];
+
+		// attach event handler to update filters object and refresh data (so filters will be applied)
+		filter_input.onchange = function () {
+			gantt.refreshData();
+			updIcon(this);
+		}
+	}
+
+	function hasPriority(parent, priority) {
+		if (gantt.getTask(parent).priority == priority)
+			return true;
+
+		var child = gantt.getChildren(parent);
+		for (var i = 0; i < child.length; i++) {
+			if (hasPriority(child[i], priority))
+				return true;
+		}
+		return false;
+	}
+
+	gantt.attachEvent("onBeforeTaskDisplay", function (id, task) {
+		for (var i = 0; i < filter_inputs.length; i++) {
+			var filter_input = filter_inputs[i];
+
+
+			if (filter_input.checked) {
+				if (hasPriority(id, filter_input.name)) {
+					return true;
+				}
+			}
+
+		}
+		return false;
+	});
+
+	
+	
+gantt.config.columns = [
+		{name: "text", label: "Task name", tree: true, width: '*'},
+		{
+			name: "progress", label: "Progress", width: 80, align: "center",
+			template: function (item) {
+				if (item.progress >= 1)
+					return "Complete";
+				if (item.progress == 0)
+					return "Not started";
+				return Math.round(item.progress * 100) + "%";
+			}
+		},
+		{
+			name: "priority", label: "Priority", align: "center", template: function (obj) {
+				if (obj.priority == 1) return "High";
+				if (obj.priority == 2) return "Normal";
+				return "Low";
+			}
+		}
+	];
+	
+	
+	
+		gantt.templates.rightside_text = function (start, end, task) {
+		if (task.type == gantt.config.types.milestone) {
+			return task.text;
+		}
+		return "";
+	};
+
+	gantt.i18n.setLocale({
+		labels:{
+			time_enable_button: 'Schedule',
+			time_disable_button: 'Unschedule',
+		}
+	});
+	
+	
+	function updIcon(el){
+		el.parentElement.classList.toggle("checked_label");
+
+		var iconEl = el.parentElement.querySelector("i"),
+			checked = "check_box",
+			unchecked = "check_box_outline_blank",
+			className = "icon_color";
+
+		iconEl.textContent = iconEl.textContent==checked?unchecked:checked;
+		iconEl.classList.toggle(className);
+	}
+
+function exportGantt(etype){
+gantt.exportToPDF({
+  name: "mygantt.pdf",
+      start:"01-07-2023",
+    end:"01-09-2023"
+});
+
+}
+function updateCriticalPath(toggle) {
+		toggle.enabled = !toggle.enabled;
+		if (toggle.enabled) {
+			toggle.innerHTML = "Hide Critical Path";
+			gantt.config.highlight_critical_path = true;
+		} else {
+			toggle.innerHTML = "Show Critical Path";
+			gantt.config.highlight_critical_path = false;
+		}
+		gantt.render();
+	}
+	
+	
+function updateCriticalTasks(toggle) {
+		toggle.enabled = !toggle.enabled;
+		if (toggle.enabled) {
+			toggle.innerHTML = "Auto schedule";
+            gantt.config.auto_scheduling = true;
+		} else {
+			toggle.innerHTML = "Cancel Auto S";
+            gantt.config.auto_scheduling = false;
+			}
+		gantt.render();
+	}
+
+//gantt.config.auto_scheduling = false;
+//gantt.config.auto_scheduling_strict = true;
+
+	
+gantt.init("gantt_here");
+gantt.parse({
+  data: [
+ 
+    {id: 1, text: "TRIBO", start_date: null, duration: null, parent:0, progress: 0, open: true, priority : 1},
+    {id: 2, text: "BOTS", start_date: null, duration: null, parent:1, progress: 0.5, open: true, priority : 1},
+	{id: 3, text: "Desenvolvimento", start_date: "2023-07-15 00:00", duration:1, parent:2, progress: 0, priority : 1},
+    {id: 4, text: "Testes", start_date: "2023-07-16 00:00", duration:2, parent:2, progress: 0, priority : 1},
+    {id: 5, text: "Documentacao", start_date: "2023-07-17 00:00", duration:1, parent:2, progress: 0, priority : 2},
+    {id: 10, text: "APPS", start_date: null, duration: null, parent:1, progress: 0, open: true, priority: 3},
+    {id: 11, text: "APP - Func 1", start_date: "2023-07-20 00:00", duration:5, parent:10, progress: 1, priority: 3},
+	{id: 20, text: "TCVC", start_date: null, duration:5, parent:1, progress: 0, open: true, priority: 3},
+	{id: 21, text: "TCVC - Func 2", start_date: null, duration:5, parent:20, progress: 0, priority: 3},
+	{id: 22, text: "TCVC - Func 3", start_date: "2023-07-18 00:00", duration:5, parent:20, progress: 0, priority: 3},
+	{id: 30, text: "TCEMP", start_date: null, duration:5, parent:1, progress: 0, open: true, priority: 3},
+	{id: 31, text: "TCEMP-1", start_date: "2023-07-15 00:00", duration:5, parent:30, progress: 0, priority: 3},
+	{id: 32, text: "TCEMP-2", start_date: "2023-07-18 00:00", duration:5, parent:30, progress: 0, priority: 3},
+	
+	
+  
+  ],
+  links:[
+    {id:2, source:3, target:4, type:"0"},
+    {id:3, source:4, target:5, type:"1"},
+    {id:4, source:11, target:3, type:"0"},
+    {id:5, source:22, target:3, type:"0"},
+	{id:6, source:32, target:31, type:"0"},
+	{id:7, source:3, target:4, type:"0"},
+	
+	
+	
+  ]
+});
+
+gantt.attachEvent("onLinkClick", function (id) {
+		var link = this.getLink(id),
+			src = this.getTask(link.source),
+			trg = this.getTask(link.target),
+			types = this.config.links;
+
+		var first = "", second = "";
+		switch (link.type) {
+			case types.finish_to_start:
+				first = "finish";
+				second = "start";
+				break;
+			case types.start_to_start:
+				first = "start";
+				second = "start";
+				break;
+			case types.finish_to_finish:
+				first = "finish";
+				second = "finish";
+				break;
+		}
+
+		gantt.message("Must " + first + " <b>" + src.text + "</b> to " + second + " <b>" + trg.text + "</b>");
+	});
+
+
+</script>
+<%- include("_footer") -%>
